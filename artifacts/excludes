@@ -1,0 +1,9 @@
+.git
+.warden
+artifacts/*
+dev
+patches
+phpserver
+
+auth.json
+deployer.php
