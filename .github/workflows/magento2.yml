@@ -18,8 +18,9 @@ jobs:
             ~/.composer/cache
           key: vendor-${{ hashFiles('**/composer.lock') }}
 
-      - name: Setup PHP
-        run: switch-php php8.2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Install Composer dependencies
         run: |
@@ -67,8 +68,9 @@ jobs:
             ~/.composer/cache
           key: vendor-${{ hashFiles('**/composer.lock') }}
 
-      - name: Setup PHP
-        run: switch-php php8.2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Install Composer dependencies
         run: |
@@ -202,8 +204,9 @@ jobs:
             ~/.composer/cache
           key: vendor-${{ hashFiles('**/composer.lock') }}
 
-      - name: Setup PHP
-        run: switch-php php8.2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Download artifact
         uses: actions/download-artifact@v4
