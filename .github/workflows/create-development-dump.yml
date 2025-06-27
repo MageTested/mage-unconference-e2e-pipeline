@@ -1,0 +1,46 @@
+name: Create development dump
+
+on:
+  workflow_dispatch:
+  schedule:
+      - cron: '33 9 * * 1'
+
+jobs:
+  create-development-dump:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            ~/.composer/cache
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        run: |
+          rm -rfv vendor/magento/magento2-base || echo "No Magento 2 Base to remove"
+          composer install --no-interaction --no-progress --no-suggest --prefer-dist
+
+      - name: Dump database
+        uses: deployphp/action@v1
+        with:
+          dep: copy:database:dump stage=production
+          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Upload to S3
+        run: aws s3 cp ./stripped-dump.sql.gz s3://controlaltdelete-github-action/webshop.nl/

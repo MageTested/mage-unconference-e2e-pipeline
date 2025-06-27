@@ -1,0 +1,218 @@
+name: "Magento 2"
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            !vendor/magento/magento2-base
+            ~/.composer/cache
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+
+      - name: Setup PHP
+        run: switch-php php8.2
+
+      - name: Install Composer dependencies
+        run: |
+          rm -rfv vendor/magento/magento2-base || echo "No Magento 2 Base to remove"
+          composer install --no-dev --prefer-dist --optimize-autoloader
+
+      - name: Build artifact
+        run: vendor/bin/dep artifact:build localhost
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-artifact
+          path: |
+            artifacts/artifact.tar.gz
+
+      - name: Upload error logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: magento-logs
+          path: |
+            var/log
+
+  test-phpstan:
+    needs:
+      - build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - run: git branch
+      - run: env
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            !vendor/magento/magento2-base
+            ~/.composer/cache
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+
+      - name: Setup PHP
+        run: switch-php php8.2
+
+      - name: Install Composer dependencies
+        run: |
+          rm -rfv vendor/magento/magento2-base || echo "No Magento 2 Base to remove"
+          composer install --prefer-dist
+
+      - name: Run PHP Parallel Lint
+        run: php vendor/bin/parallel-lint app
+
+      - name: Run PHPStan
+        run: php vendor/bin/phpstan
+
+  test-end-to-end:
+    needs:
+      - build
+
+    runs-on: self-hosted-full
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: artifacts
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Unpack artifact
+        run: |
+          tar -xzf artifacts/artifact.tar.gz
+          ls -al
+
+      - name: Disable DDEV cron
+        run: rm -f .ddev/web-build/magento.cron
+
+      - name: Setup DDEV
+        uses: ddev/github-action-setup-ddev@v1
+
+      - name: Download & import database dump
+        run: |
+          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
+          mv app/etc/env{.ddev,}.php
+          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
+
+      - name: Prepare Magento
+        run: |
+          cp app/etc/config{,.original}.php
+          ddev exec bin/magento setup:upgrade --keep-generated
+          ddev exec bin/magento indexer:reindex
+
+      - name: Check if we can reach Magento
+        run: curl --fail-with-body -v https://webshop.test
+
+      - name: Install Playwright dependencies
+        run: |
+          cd tests/playwright
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: |
+          cd tests/playwright
+          TEST_BASE_URL=https://webshop.test npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/playwright/playwright-report/
+
+      - name: Check if config.php has changed
+        id: check_changes
+        run: |
+          set +e
+          cmp --silent app/etc/config.php app/etc/config.original.php
+          exit_code=$?
+
+          echo "cmp exit code: $exit_code"
+
+          if [ $exit_code -eq 1 ]; then
+            echo "File has changed."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          elif [ $exit_code -eq 0 ]; then
+            echo "File has not changed."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "An error occurred while comparing files."
+            echo "changed=error" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check_changes.outputs.changed == 'true'
+        with:
+          path: 'checkout'
+
+      - name: Commit app/etc/config.php back
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          cd checkout
+          cp ../app/etc/config.php app/etc/config.php
+
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add app/etc/config.php
+          git commit -m "[skip ci] Update app/etc/config.php"
+          git push
+
+  deploy:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    needs:
+      - test-end-to-end
+      - test-phpstan
+
+    concurrency: deploy-${{ github.head_ref || github.ref_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            !vendor/magento/magento2-base
+            ~/.composer/cache
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+
+      - name: Setup PHP
+        run: switch-php php8.2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: artifacts
+
+      - name: Deploy artifact
+        uses: deployphp/action@v1
+        with:
+          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          dep: artifact:deploy branch=${{ github.head_ref || github.ref_name }}
