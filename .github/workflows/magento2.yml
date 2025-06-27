@@ -87,7 +87,7 @@ jobs:
     needs:
       - build
 
-    runs-on: self-hosted-full
+    runs-on: ubuntu-latest
 
     steps:
       - name: Download artifact
