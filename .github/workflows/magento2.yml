@@ -114,11 +114,11 @@ jobs:
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
 
-      - name: Download & import database dump
-        run: |
-          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
-          mv app/etc/env{.ddev,}.php
-          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
+#      - name: Download & import database dump
+#        run: |
+#          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
+#          mv app/etc/env{.ddev,}.php
+#          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
 
       - name: Prepare Magento
         run: |
