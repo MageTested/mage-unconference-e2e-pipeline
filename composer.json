@@ -94,10 +94,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "repositories": {
-        "dev-extensions": {
-            "type": "path",
-            "url": "extensions/*"
-        },
         "0": {
             "type": "composer",
             "url": "https://repo-magento-mirror.fooman.co.nz/"
