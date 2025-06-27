@@ -19,4 +19,8 @@ host('www.magetested.com')
 
 // Hooks
 
+localhost()
+    ->set('local', true)
+;
+
 after('deploy:failed', 'deploy:unlock');
