@@ -1,0 +1,18 @@
+version: '3.6'
+services:
+  tmp-mysql:
+    image: mariadb:10.5
+    container_name: ${DDEV_SITENAME}-tmp-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=magento_integration_tests
+      - MYSQL_USER=magento
+      - MYSQL_PASSWORD=magento
+    volumes:
+      - type: tmpfs
+        target: /var/lib/mysql
+        tmpfs:
+          size: 5000000000 # Adjust the size as needed (in bytes)
+#    ports:
+#      - "3307:3306"
