@@ -131,7 +131,7 @@ jobs:
           ddev exec bin/magento sampledata:deploy
 
       - name: Check if we can reach Magento
-        run: curl --fail-with-body -v https://webshop.test
+        run: curl --fail-with-body -v https://mageunconference.test
 
       - name: Install Playwright dependencies
         run: |
@@ -142,7 +142,7 @@ jobs:
       - name: Run Playwright tests
         run: |
           cd tests/playwright
-          TEST_BASE_URL=https://webshop.test npx playwright test
+          TEST_BASE_URL=https://mageunconference.test npx playwright test
 
       - uses: actions/upload-artifact@v4
         if: always()
