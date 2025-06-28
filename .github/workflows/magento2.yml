@@ -47,6 +47,7 @@ jobs:
             var/log
 
   test-phpstan:
+    name: "Run PHPStan and PHP Parallel Lint"
     needs:
       - build
 
