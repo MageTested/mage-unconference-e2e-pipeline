@@ -126,7 +126,6 @@ jobs:
 
       - name: Prepare Magento
         run: |
-          mv app/etc/env{.ddev,}.php
           cp app/etc/config{,.original}.php
           ddev exec bin/magento setup:upgrade --keep-generated
           ddev exec bin/magento indexer:reindex
