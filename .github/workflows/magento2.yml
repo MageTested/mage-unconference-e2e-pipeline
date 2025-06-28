@@ -114,11 +114,15 @@ jobs:
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
 
-#      - name: Download & import database dump
-#        run: |
+      - name: Download & import database dump
+        run: |
 #          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
 #          mv app/etc/env{.ddev,}.php
 #          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
+#
+#         Normally you would download a dump from production like above, for this example we are using sample data.
+          mv app/etc/env{.ddev,}.php
+          ddev exec bin/magento sampledata:deploy
 
       - name: Prepare Magento
         run: |
@@ -126,10 +130,6 @@ jobs:
           cp app/etc/config{,.original}.php
           ddev exec bin/magento setup:upgrade --keep-generated
           ddev exec bin/magento indexer:reindex
-
-      - name: Installs sampledata
-        run: |
-          ddev exec bin/magento sampledata:deploy
 
       - name: Check if we can reach Magento
         run: curl --fail-with-body -v https://mageunconference.test
