@@ -1,0 +1,27 @@
+parameters:
+    level: 1
+    tmpDir: var/phpstan
+    paths:
+        - app/code/
+        - app/design
+    fileExtensions:
+        - php
+        - phtml
+    bootstrapFiles:
+        - vendor/bitexpert/phpstan-magento/autoload.php
+    reportUnmatchedIgnoredErrors: false
+    magento:
+        checkResourceModelsUsedDirectly: false
+    ignoreErrors:
+        - message: '#Variable \$(block|escaper|this) might not be defined.#'
+          path: *.phtml
+        - message: '#Variable \$.* might not be defined.#'
+          path: *.phtml
+        - message: '#File ends with a trailing whitespace..#'
+          path: *.phtml
+        - message: '#Use service contracts to persist entities in favour of#'
+          paths:
+              - */Setup/*/*.php
+
+includes:
+    - vendor/bitexpert/phpstan-magento/extension.neon
