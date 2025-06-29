@@ -115,20 +115,18 @@ jobs:
       - name: Setup DDEV
         uses: ddev/github-action-setup-ddev@v1
 
-#      - name: Download & import database dump
-#        run: |
-#         Normally you would download a dump from production like below, for this example we are using sample data.
+      - name: Download & import database dump
+        run: |
+          pv db-backup.sql.gz | ddev import-db
+
+#         Normally you would download a dump from production like below, for this example we are using a database dump that is already in the repository.
 #          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
 #          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
 
       - name: Prepare Magento
         run: |
           mv app/etc/env{.ddev,}.php
-          cat app/etc/env.php || echo 'No env file found'
-          cat app/etc/config.php || echo 'No config file found'
           cp app/etc/config{,.original}.php
-          ddev exec bin/magento cache:flush
-          ddev exec bin/magento app:config:import
           ddev exec bin/magento config:show catalog/search/engine # For debugging purposes
           ddev exec bin/magento config:show catalog/search/opensearch_server_hostname # For debugging purposes
           ddev exec bin/magento setup:upgrade --keep-generated
