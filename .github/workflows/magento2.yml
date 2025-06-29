@@ -125,8 +125,10 @@ jobs:
         run: |
           mv app/etc/env{.ddev,}.php
           cat app/etc/env.php || echo 'No env file found'
+          cat app/etc/config.php || echo 'No config file found'
           cp app/etc/config{,.original}.php
           ddev exec bin/magento cache:flush
+          ddev exec bin/magento app:config:import
           ddev exec bin/magento config:show catalog/search/engine # For debugging purposes
           ddev exec bin/magento config:show catalog/search/opensearch_server_hostname # For debugging purposes
           ddev exec bin/magento setup:upgrade --keep-generated
