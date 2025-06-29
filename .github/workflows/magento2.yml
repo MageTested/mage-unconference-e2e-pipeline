@@ -185,7 +185,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git add app/etc/config.php
           git commit -m "[skip ci] Update app/etc/config.php"
-          git push
+#          Sometimes modules introduce changes to app/etc/config.php, which we want to commit back to the repository.
+#          This can happen when a module introduces a new dependency.
+#          git push
 
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
@@ -197,6 +199,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: echo "This is disabled are there is no where to deploy to." && exit 1
+
       - uses: actions/checkout@v4
 
       - name: Cache vendor
