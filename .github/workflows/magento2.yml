@@ -117,7 +117,7 @@ jobs:
 
       - name: Download & import database dump
         run: |
-          cat db-backup.sql.gz | ddev import-db
+          ddev import-db --file=db-backup.sql.gz
 
 #         Normally you would download a dump from production like below, for this example we are using a database dump that is already in the repository.
 #          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
