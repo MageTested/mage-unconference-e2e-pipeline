@@ -189,41 +189,41 @@ jobs:
 #          This can happen when a module introduces a new dependency.
 #          git push
 
-  deploy:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    needs:
-      - test-end-to-end
-      - test-phpstan
-
-    concurrency: deploy-${{ github.head_ref || github.ref_name }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - run: echo "This is disabled are there is no where to deploy to." && exit 1
-
-      - uses: actions/checkout@v4
-
-      - name: Cache vendor
-        uses: actions/cache@v4
-        with:
-          path: |
-            vendor
-            !vendor/magento/magento2-base
-            ~/.composer/cache
-          key: vendor-${{ hashFiles('**/composer.lock') }}
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifact
-          path: artifacts
-
-      - name: Deploy artifact
-        uses: deployphp/action@v1
-        with:
-          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          dep: artifact:deploy branch=${{ github.head_ref || github.ref_name }}
+#  deploy:
+#    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+#    needs:
+#      - test-end-to-end
+#      - test-phpstan
+#
+#    concurrency: deploy-${{ github.head_ref || github.ref_name }}
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - run: echo "This is disabled as there is no server to deploy it to." && exit 1
+#
+#      - uses: actions/checkout@v4
+#
+#      - name: Cache vendor
+#        uses: actions/cache@v4
+#        with:
+#          path: |
+#            vendor
+#            !vendor/magento/magento2-base
+#            ~/.composer/cache
+#          key: vendor-${{ hashFiles('**/composer.lock') }}
+#
+#      - uses: shivammathur/setup-php@v2
+#        with:
+#          php-version: '8.2'
+#
+#      - name: Download artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: build-artifact
+#          path: artifacts
+#
+#      - name: Deploy artifact
+#        uses: deployphp/action@v1
+#        with:
+#          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          dep: artifact:deploy branch=${{ github.head_ref || github.ref_name }}
