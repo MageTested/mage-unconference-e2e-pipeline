@@ -153,6 +153,12 @@ return [
                 'secure' => [
                     'base_url' => 'https://mageunconference.test/'
                 ]
+            ],
+            'catalog' => [
+                'search' => [
+                    'engine' => 'opensearch',
+                    'opensearch_server_hostname' => 'opensearch'
+                ]
             ]
         ]
     ]
