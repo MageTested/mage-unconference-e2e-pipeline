@@ -119,11 +119,11 @@ jobs:
 #        run: |
 #         Normally you would download a dump from production like below, for this example we are using sample data.
 #          aws s3 cp s3://controlaltdelete-github-action/webshop.nl/stripped-dump.sql.gz . --no-progress
-#          mv app/etc/env{.ddev,}.php
 #          ddev exec magerun2 db:import -c gz stripped-dump.sql.gz
 
       - name: Prepare Magento
         run: |
+          mv app/etc/env{.ddev,}.php
           cp app/etc/config{,.original}.php
           ddev exec bin/magento setup:upgrade --keep-generated
           ddev exec bin/magento indexer:reindex
