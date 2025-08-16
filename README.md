@@ -16,4 +16,4 @@ For the tests to run, we need a database. Normally I would set up a database dum
 
 # Want to have this on your project?
 
-I run a service called [MageTested](https://www.magetested.com) that helps you set up your CI/CD pipeline for Magento 2 projects. If you want to have this on your project, please reach out to me via [mailto:welcome@magetested.com](welcome@magetested.com), or the contact form on the MageTested website.
+I run a service called [MageTested](https://www.magetested.com) that helps you set up your CI/CD pipeline for Magento 2 projects. If you want to have this on your project, please reach out to me via [welcome@magetested.com](mailto:welcome@magetested.com), or the contact form on the MageTested website.
